@@ -1,0 +1,5 @@
+#!/usr/bin/env sh
+set -eu
+
+commit_subject=$(git log -1 --pretty=%s)
+printf 'ShareNotes commit recorded: %s\n' "$commit_subject"
