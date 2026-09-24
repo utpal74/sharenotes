@@ -1,0 +1,30 @@
+agent:
+  model: claude-sonnet-4-6
+  temperature: 0
+
+instructions:
+  - .github/agents/instructions/copilot-instructions.md
+
+skills:
+  - .github/agents/skills/lint.skill.md
+  - .github/agents/skills/build.skill.md
+  - .github/agents/skills/test.skill.md
+  - .github/agents/skills/pr-prep.skill.md
+  - .github/agents/skills/security-scan.skill.md
+  - .github/agents/skills/api-contract.skill.md
+  - .github/agents/skills/docs-sync.skill.md
+  - .github/agents/skills/changelog.skill.md
+
+hooks:
+  pre-commit: .github/agents/hooks/pre-commit
+  post-commit: .github/agents/hooks/post-commit
+
+mcp:
+  config: .github/agents/config/mcp.json
+
+context:
+  docs:
+    - docs/architecture.md
+    - docs/impl-plan.md
+  templates:
+    - .github/PULL_REQUEST_TEMPLATE.md

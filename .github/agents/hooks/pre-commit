@@ -1,0 +1,14 @@
+#!/usr/bin/env sh
+set -eu
+
+run_check() {
+  package_dir="$1"
+  script="$2"
+  printf 'Running %s in %s...\n' "$script" "$package_dir"
+  (cd "$package_dir" && npm run "$script")
+}
+
+run_check backend lint
+run_check backend build
+run_check frontend lint
+run_check frontend build

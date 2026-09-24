@@ -1,0 +1,223 @@
+# ShareNotes CI Orchestration Workflow
+
+name: ShareNotes CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ── quality ──────────────────────────────────────────────────────────────────
+  # Runs lint → build → test sequentially for both backend and frontend.
+  # A failure here blocks all downstream jobs.
+  quality:
+    name: Quality (lint + build + test)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # ── backend ──────────────────────────────────────────────────────────────
+      - name: Set up Node 22 (backend)
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Install backend dependencies
+        working-directory: backend
+        run: npm ci --legacy-peer-deps
+
+      - name: Lint backend
+        working-directory: backend
+        run: npm run lint
+
+      - name: Build backend
+        working-directory: backend
+        run: npm run build
+
+      - name: Unit-test backend
+        working-directory: backend
+        run: npm test
+
+      - name: E2E-test backend
+        working-directory: backend
+        run: npm run test:e2e
+
+      # ── frontend ─────────────────────────────────────────────────────────────
+      - name: Set up Node 22 (frontend)
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: npm ci --legacy-peer-deps
+
+      - name: Lint frontend
+        working-directory: frontend
+        run: npm run lint
+
+      - name: Build frontend
+        working-directory: frontend
+        run: npm run build
+
+  # ── security ─────────────────────────────────────────────────────────────────
+  # Runs npm audit at the "high" threshold for both workspaces.
+  # continue-on-error: true surfaces CVEs in the summary without blocking merges.
+  security:
+    name: Security scan (npm audit)
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Audit backend dependencies
+        working-directory: backend
+        run: npm audit --audit-level=high
+
+      - name: Audit frontend dependencies
+        working-directory: frontend
+        run: npm audit --audit-level=high
+
+  # ── contract ─────────────────────────────────────────────────────────────────
+  # Static check: greps notes.controller.ts for each of the 8 expected route
+  # decorators. Fails immediately if any route is absent so API regressions are
+  # caught before tests run.
+  contract:
+    name: API contract (route static check)
+    runs-on: ubuntu-latest
+    needs: quality
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verify all 8 expected routes exist in notes.controller.ts
+        shell: bash
+        run: |
+          CONTROLLER="backend/src/notes/notes.controller.ts"
+          FAILED=0
+
+          check_route() {
+            local description="$1"
+            local pattern="$2"
+            if grep -qE "$pattern" "$CONTROLLER"; then
+              echo "PASS  $description"
+            else
+              echo "FAIL  $description  (pattern: $pattern)"
+              FAILED=1
+            fi
+          }
+
+          # Route 1: POST /notes — create a note
+          check_route "POST /notes (create)"               "@Post\('notes'\)"
+
+          # Route 2: GET /notes — list notes
+          check_route "GET /notes (list)"                  "@Get\('notes'\)"
+
+          # Route 3: GET /notes/:noteId — get single note
+          check_route "GET /notes/:noteId (get)"           "@Get\('notes/:noteId'\)"
+
+          # Route 4: PATCH /notes/:noteId — update note
+          check_route "PATCH /notes/:noteId (update)"      "@Patch\('notes/:noteId'\)"
+
+          # Route 5: DELETE /notes/:noteId — delete note
+          check_route "DELETE /notes/:noteId (remove)"     "@Delete\('notes/:noteId'\)"
+
+          # Route 6: POST /notes/:noteId/share — create share link
+          check_route "POST /notes/:noteId/share (share)"  "@Post\('notes/:noteId/share'\)"
+
+          # Route 7: DELETE /notes/:noteId/share/:token — revoke share link
+          check_route "DELETE /notes/:noteId/share/:token (revoke)" "@Delete\('notes/:noteId/share/:token'\)"
+
+          # Route 8: GET /shared/:token — read shared note (public)
+          check_route "GET /shared/:token (shared)"        "@Get\('shared/:token'\)"
+
+          if [ "$FAILED" -ne 0 ]; then
+            echo ""
+            echo "One or more expected routes are missing from $CONTROLLER."
+            echo "Add the missing route(s) or update this check if the API contract changed intentionally."
+            exit 1
+          fi
+
+          echo ""
+          echo "All 8 expected routes are present."
+
+  # ── docs ─────────────────────────────────────────────────────────────────────
+  # Verifies that every npm script referenced in PULL_REQUEST_TEMPLATE.md
+  # is still defined in backend/package.json, keeping the checklist accurate.
+  docs:
+    name: Docs sync (PR template vs package.json)
+    runs-on: ubuntu-latest
+    needs: quality
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verify script commands exist in backend/package.json
+        shell: bash
+        run: |
+          PKG="backend/package.json"
+          FAILED=0
+
+          check_script() {
+            local label="$1"
+            local script_key="$2"
+            if grep -q "\"$script_key\"" "$PKG"; then
+              echo "PASS  $label found in $PKG"
+            else
+              echo "FAIL  $label missing from $PKG"
+              FAILED=1
+            fi
+          }
+
+          # Commands listed in .github/PULL_REQUEST_TEMPLATE.md Test Evidence table
+          check_script "npm run lint"       "lint"
+          check_script "npm run build"      "build"
+          check_script "npm test"           "test"
+          check_script "npm run test:e2e"   "test:e2e"
+
+          if [ "$FAILED" -ne 0 ]; then
+            echo ""
+            echo "One or more scripts referenced in PULL_REQUEST_TEMPLATE.md are missing"
+            echo "from $PKG. Update package.json or the PR template to keep them in sync."
+            exit 1
+          fi
+
+          echo ""
+          echo "All PR-template script references exist in $PKG."
+
+  # ── release-readiness ────────────────────────────────────────────────────────
+  # Warns when CHANGELOG.md is absent at the repo root but does not fail the
+  # pipeline — teams adopting a changelog gradually should not be blocked.
+  release-readiness:
+    name: Release readiness (CHANGELOG.md check)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check for CHANGELOG.md
+        shell: bash
+        run: |
+          if [ -f "CHANGELOG.md" ]; then
+            echo "PASS  CHANGELOG.md found at repository root."
+          else
+            echo "WARN  CHANGELOG.md is missing from the repository root."
+            echo "      Consider adding a CHANGELOG.md to document notable changes"
+            echo "      before the next release (see https://keepachangelog.com)."
+          fi
+          # Exit 0 intentionally — missing changelog is a warning, not a blocker.
+          exit 0
