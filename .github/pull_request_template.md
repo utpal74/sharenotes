@@ -9,16 +9,18 @@
 
 ## Test Evidence
 
-| Command | Result |
-| --- | --- |
-| `cd backend; npm run lint` | |
-| `cd backend; npm run build` | |
-| `cd backend; npm test` | |
-| `cd backend; npm run test:e2e` | |
-| `cd frontend; npm run lint` | |
-| `cd frontend; npm run build` | |
+Required: include the exact CI check result and pass counts from the PR run. Do not leave any result blank.
 
-<!-- Include exact command output or CI links. Mark checks that were not run and explain why. -->
+| Check | Result |
+| --- | --- |
+| Backend lint | |
+| Backend build | |
+| Backend unit tests | `X passed, Y failed, Z total` |
+| Backend E2E tests | `X passed, Y failed, Z total` |
+| Frontend lint | |
+| Frontend build | |
+
+<!-- Include exact command output or CI links. If a check was not run, mark it as "not run" and explain why. Never claim a check passed without recorded evidence from CI. -->
 
 ## Security and Data Considerations
 

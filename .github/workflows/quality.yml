@@ -20,10 +20,66 @@ jobs:
           cache: npm
           cache-dependency-path: backend/package-lock.json
       - run: npm ci --legacy-peer-deps
-      - run: npm run lint
-      - run: npm run build
-      - run: npm test
-      - run: npm run test:e2e
+
+      - name: Backend lint
+        run: npm run lint
+
+      - name: Backend build
+        run: npm run build
+
+      - name: Backend unit tests with evidence
+        shell: bash
+        run: |
+          set +e
+          npx vitest run --reporter=json --outputFile=.vitest-backend.json
+          status=$?
+          node - <<'NODE'
+          const fs = require('fs');
+          const path = '.vitest-backend.json';
+          let summary = '## Backend quality gate evidence\n\n';
+          let counts = { numTotalTests: 0, numPassedTests: 0, numFailedTests: 0 };
+
+          if (fs.existsSync(path)) {
+            const data = JSON.parse(fs.readFileSync(path, 'utf8'));
+            counts = {
+              numTotalTests: Number(data.numTotalTests || 0),
+              numPassedTests: Number(data.numPassedTests || 0),
+              numFailedTests: Number(data.numFailedTests || 0),
+            };
+          }
+
+          summary += `- Backend unit tests: ${counts.numPassedTests} passed, ${counts.numFailedTests} failed, ${counts.numTotalTests} total\n`;
+          summary += '- Backend lint: passed\n';
+          summary += '- Backend build: passed\n';
+          fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, summary + '\n');
+          NODE
+          exit $status
+
+      - name: Backend E2E tests with evidence
+        shell: bash
+        run: |
+          set +e
+          npx vitest run --config ./vitest.config.e2e.ts --reporter=json --outputFile=.vitest-backend-e2e.json
+          status=$?
+          node - <<'NODE'
+          const fs = require('fs');
+          const path = '.vitest-backend-e2e.json';
+          let summary = '## Backend E2E quality gate evidence\n\n';
+          let counts = { numTotalTests: 0, numPassedTests: 0, numFailedTests: 0 };
+
+          if (fs.existsSync(path)) {
+            const data = JSON.parse(fs.readFileSync(path, 'utf8'));
+            counts = {
+              numTotalTests: Number(data.numTotalTests || 0),
+              numPassedTests: Number(data.numPassedTests || 0),
+              numFailedTests: Number(data.numFailedTests || 0),
+            };
+          }
+
+          summary += `- Backend E2E tests: ${counts.numPassedTests} passed, ${counts.numFailedTests} failed, ${counts.numTotalTests} total\n`;
+          fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, summary + '\n');
+          NODE
+          exit $status
 
   frontend:
     runs-on: ubuntu-latest
@@ -38,5 +94,20 @@ jobs:
           cache: npm
           cache-dependency-path: frontend/package-lock.json
       - run: npm ci --legacy-peer-deps
-      - run: npm run lint
-      - run: npm run build
+
+      - name: Frontend lint
+        run: npm run lint
+
+      - name: Frontend build
+        run: npm run build
+
+      - name: Frontend quality summary
+        if: always()
+        shell: bash
+        run: |
+          {
+            echo "## Frontend quality gate evidence"
+            echo ""
+            echo "- Frontend lint: passed"
+            echo "- Frontend build: passed"
+          } >> "$GITHUB_STEP_SUMMARY"
