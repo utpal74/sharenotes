@@ -1,9 +1,7 @@
-name: ShareNotes quality
+name: ShareNotes reusable quality checks
 
 on:
-  pull_request:
-  push:
-    branches: [main]
+  workflow_call:
 
 permissions:
   contents: read

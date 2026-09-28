@@ -31,11 +31,15 @@ sharenotes/
 |-- frontend/                React + Vite application
 |   |-- src/
 |   `-- package.json
-|-- architecture.md          High-level system architecture
-|-- design-review.md         Architecture review findings and decisions
-|-- final-review-checklist.md Review activity and readiness checks
-|-- impl-plan.md             Dependency-ordered implementation plan
-|-- reuirement.md            Product requirements and acceptance criteria
+|-- docs/                     Requirements, architecture, review, plan, and verification artifacts
+|   |-- input/                 Source Word user stories for the SDLC Orchestrator
+|   |-- requirements.md       Product requirements and acceptance criteria
+|   |-- architecture.md       High-level system architecture
+|   |-- design-review.md      Architecture review findings and decisions
+|   |-- impl-plan.md          Dependency-ordered implementation plan
+|   `-- verification.md      Verification evidence
+|-- .github/agents/           Eight SDLC phase agents and the orchestrator
+|-- scripts/                  Word-story extraction and launch helpers
 |-- start-sharenotes.ps1     Windows PowerShell launcher
 |-- start-sharenotes.sh      Bash launcher
 `-- README.md
@@ -192,7 +196,7 @@ Notes and share links are stored in JavaScript `Map` instances inside the runnin
 - Starting the application again does not restore previous notes.
 - The launcher scripts do not start PostgreSQL, MinIO, or Redis.
 
-The next persistence phase is planned to add PostgreSQL, migrations, object storage, Redis, and a database-backed notes service. See [impl-plan.md](impl-plan.md) for the dependency-ordered implementation plan.
+The next persistence phase is planned to add PostgreSQL, migrations, object storage, Redis, and a database-backed notes service. See [impl-plan.md](docs/impl-plan.md) for the dependency-ordered implementation plan.
 
 ## Current Limitations
 
@@ -246,8 +250,9 @@ The next persistence phase is planned to add PostgreSQL, migrations, object stor
 
 ## Design Documents
 
-- [Requirements](reuirement.md)
-- [Architecture](architecture.md)
-- [Design Review](design-review.md)
-- [Final Review Checklist](final-review-checklist.md)
-- [Implementation Plan](impl-plan.md)
+- [Requirements](docs/requirements.md)
+- [Architecture](docs/architecture.md)
+- [Design Review](docs/design-review.md)
+- [Final Review Checklist](docs/final-review-checklist.md)
+- [Implementation Plan](docs/impl-plan.md)
+- [Verification](docs/verification.md)

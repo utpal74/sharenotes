@@ -1,9 +1,10 @@
 ## Summary
 
-<!-- What problem does this PR solve? -->
+<!-- Write a 2-3 sentence overview of what was built and why. -->
 
 ## Changes Made
 
+<!-- List every added or modified file and why it changed. -->
 - 
 
 ## Test Evidence
@@ -17,6 +18,8 @@
 | `cd frontend; npm run lint` | |
 | `cd frontend; npm run build` | |
 
+<!-- Include exact command output or CI links. Mark checks that were not run and explain why. -->
+
 ## Security and Data Considerations
 
 - Authorization impact:
@@ -25,7 +28,7 @@
 
 ## Known Limitations
 
-<!-- Include prototype limitations and any unavailable infrastructure. -->
+<!-- Include items marked Not Found, out-of-scope work, and prototype limitations. -->
 
 ## Changelog
 

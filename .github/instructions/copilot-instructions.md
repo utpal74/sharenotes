@@ -6,7 +6,7 @@ ShareNotes is a NestJS API and Vite React frontend. The current implementation i
 
 ## Engineering Rules
 
-- Preserve the API behavior documented in `architecture.md` and `impl-plan.md` unless the change updates those contracts.
+- Preserve the API behavior documented in `docs/architecture.md` and `docs/impl-plan.md` unless the change updates those contracts.
 - Keep owner authorization, version conflict handling, soft deletion, share-link revocation, and public read-only access covered by tests.
 - Treat the backend as the authority for validation and authorization. Client validation is only for usability.
 - Do not add secrets, credentials, generated build output, or local environment files.

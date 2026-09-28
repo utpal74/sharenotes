@@ -2,7 +2,7 @@
 
 ## Scope
 
-Review the current implementation against `reuirement.md`, `architecture.md`, and `impl-plan.md`.
+Review the current implementation against `requirements.md`, `architecture.md`, and `impl-plan.md`.
 
 ## Required Review Dimensions
 

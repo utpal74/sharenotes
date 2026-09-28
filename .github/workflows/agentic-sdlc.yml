@@ -20,57 +20,7 @@ jobs:
   # A failure here blocks all downstream jobs.
   quality:
     name: Quality (lint + build + test)
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      # ── backend ──────────────────────────────────────────────────────────────
-      - name: Set up Node 22 (backend)
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: npm
-          cache-dependency-path: backend/package-lock.json
-
-      - name: Install backend dependencies
-        working-directory: backend
-        run: npm ci --legacy-peer-deps
-
-      - name: Lint backend
-        working-directory: backend
-        run: npm run lint
-
-      - name: Build backend
-        working-directory: backend
-        run: npm run build
-
-      - name: Unit-test backend
-        working-directory: backend
-        run: npm test
-
-      - name: E2E-test backend
-        working-directory: backend
-        run: npm run test:e2e
-
-      # ── frontend ─────────────────────────────────────────────────────────────
-      - name: Set up Node 22 (frontend)
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: npm
-          cache-dependency-path: frontend/package-lock.json
-
-      - name: Install frontend dependencies
-        working-directory: frontend
-        run: npm ci --legacy-peer-deps
-
-      - name: Lint frontend
-        working-directory: frontend
-        run: npm run lint
-
-      - name: Build frontend
-        working-directory: frontend
-        run: npm run build
+    uses: ./.github/workflows/quality.yml
 
   # ── security ─────────────────────────────────────────────────────────────────
   # Runs npm audit at the "high" threshold for both workspaces.
@@ -158,7 +108,7 @@ jobs:
           echo "All 8 expected routes are present."
 
   # ── docs ─────────────────────────────────────────────────────────────────────
-  # Verifies that every npm script referenced in PULL_REQUEST_TEMPLATE.md
+  # Verifies that every npm script referenced in pull_request_template.md
   # is still defined in backend/package.json, keeping the checklist accurate.
   docs:
     name: Docs sync (PR template vs package.json)
@@ -176,29 +126,32 @@ jobs:
           check_script() {
             local label="$1"
             local script_key="$2"
-            if grep -q "\"$script_key\"" "$PKG"; then
-              echo "PASS  $label found in $PKG"
+            local package_path="$3"
+            if grep -q "\"$script_key\"" "$package_path"; then
+              echo "PASS  $label found in $package_path"
             else
-              echo "FAIL  $label missing from $PKG"
+              echo "FAIL  $label missing from $package_path"
               FAILED=1
             fi
           }
 
-          # Commands listed in .github/PULL_REQUEST_TEMPLATE.md Test Evidence table
-          check_script "npm run lint"       "lint"
-          check_script "npm run build"      "build"
-          check_script "npm test"           "test"
-          check_script "npm run test:e2e"   "test:e2e"
+          # Commands listed in .github/pull_request_template.md Test Evidence table
+          check_script "backend npm run lint"       "lint"       "backend/package.json"
+          check_script "backend npm run build"      "build"      "backend/package.json"
+          check_script "backend npm test"           "test"       "backend/package.json"
+          check_script "backend npm run test:e2e"   "test:e2e"   "backend/package.json"
+          check_script "frontend npm run lint"      "lint"       "frontend/package.json"
+          check_script "frontend npm run build"     "build"      "frontend/package.json"
 
           if [ "$FAILED" -ne 0 ]; then
             echo ""
-            echo "One or more scripts referenced in PULL_REQUEST_TEMPLATE.md are missing"
-            echo "from $PKG. Update package.json or the PR template to keep them in sync."
+            echo "One or more scripts referenced in pull_request_template.md are missing"
+            echo "from their package.json. Update the package or PR template to keep them in sync."
             exit 1
           fi
 
           echo ""
-          echo "All PR-template script references exist in $PKG."
+          echo "All PR-template script references exist in the relevant package.json files."
 
   # ── release-readiness ────────────────────────────────────────────────────────
   # Warns when CHANGELOG.md is absent at the repo root but does not fail the
