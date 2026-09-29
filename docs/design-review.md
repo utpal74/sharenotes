@@ -2,7 +2,7 @@
 
 **Review date:** September 9, 2026  
 **Reviewer:** GitHub Copilot Chat, senior architecture review  
-**Inputs:** [reuirement.md](reuirement.md), [architecture.md](architecture.md)
+**Inputs:** [requirements.md](requirements.md), [architecture.md](architecture.md)
 
 ## Review Scope
 
