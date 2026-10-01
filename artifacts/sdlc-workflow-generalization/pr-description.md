@@ -6,7 +6,7 @@ Generalize the Copilot SDLC workflow so the orchestrator, phase agents, and skil
 
 - `.github/agents/sdlc-orchestrator.agent.md`: accept Jira/`.docx`/`.md` sources, derive a safe run ID, route outputs to `artifacts/<run-id>/`, default to local-only, and detect the actual default branch and host.
 - `.github/agents/requirements-analyst.agent.md`, `solution-architect.agent.md`, `architecture-reviewer.agent.md`, `delivery-planner.agent.md`, `implementation-engineer.agent.md`, `code-reviewer.agent.md`, `quality-verifier.agent.md`: read and write artifact paths supplied by the orchestrator; remove ShareNotes stack and limitation assumptions.
-- `.github/agents/pull-request-author.agent.md`: stage all changes except paths matched by `.gitignore` (including already-tracked ignored files) and `.gitignore` files themselves, verify with `git check-ignore`, use Git CLI for branch/commit/push, prefer a host-matching MCP PR tool over a CLI, and never assume `main`.
+- `.github/agents/pull-request-author.agent.md`: stage all changes except paths matched by `.gitignore` (including already-tracked ignored files) and `.gitignore` files themselves, verify with `git check-ignore`, reuse the current non-default branch instead of creating new branches, update an existing open PR by pushing rather than opening a duplicate, use Git CLI for commit/push, prefer a host-matching MCP PR tool over a CLI, and never assume `main`.
 - `.github/config/default.yml`: describe intake types, the artifact layout, collision handling, local-only default, staging policy, and PR-creation order.
 - `.github/skills/*/SKILL.md` (api-contract, build, changelog, docs-sync, lint, pr-prep, security-scan, test): discover the repository's commands, tooling, and contracts instead of using fixed `backend/`/`frontend/` npm commands.
 - `.github/copilot-instructions.md`: replace ShareNotes-specific rules with reusable workflow rules.
@@ -23,18 +23,18 @@ Excluded because `.gitignore` lists `.vscode/`: local changes to `.vscode/mcp.js
 
 Run locally on October 1, 2026 from the working tree for this PR. GitHub Actions have not run yet; they run after push.
 
-| Check | Result |
-| --- | --- |
-| Backend lint (`npm run lint`) | Passed, exit 0 |
-| Backend build (`npm run build`) | Passed, exit 0 |
-| Backend unit tests (`npm test`) | `1 passed, 0 failed, 1 total` (1 test file) |
-| Backend E2E tests (`npm run test:e2e`) | `1 passed, 0 failed, 1 total` (1 test file) |
-| Frontend lint (`npm run lint`) | Passed, exit 0; 1 existing warning: `src/App.tsx:42` `react(set-state-in-effect)` |
-| Frontend build (`npm run build`) | Passed, exit 0 |
-| Prettier check on changed agents, skills, config, and docs | Passed |
-| Local Markdown link check (37 files) | Passed; no missing targets |
-| Manifest skill paths exist (8 unique) | Passed |
-| `git diff --check` | Passed |
+| Check                                                      | Result                                                                            |
+| ---------------------------------------------------------- | --------------------------------------------------------------------------------- |
+| Backend lint (`npm run lint`)                              | Passed, exit 0                                                                    |
+| Backend build (`npm run build`)                            | Passed, exit 0                                                                    |
+| Backend unit tests (`npm test`)                            | `1 passed, 0 failed, 1 total` (1 test file)                                       |
+| Backend E2E tests (`npm run test:e2e`)                     | `1 passed, 0 failed, 1 total` (1 test file)                                       |
+| Frontend lint (`npm run lint`)                             | Passed, exit 0; 1 existing warning: `src/App.tsx:42` `react(set-state-in-effect)` |
+| Frontend build (`npm run build`)                           | Passed, exit 0                                                                    |
+| Prettier check on changed agents, skills, config, and docs | Passed                                                                            |
+| Local Markdown link check (37 files)                       | Passed; no missing targets                                                        |
+| Manifest skill paths exist (8 unique)                      | Passed                                                                            |
+| `git diff --check`                                         | Passed                                                                            |
 
 Backend tests also printed the existing `vite-tsconfig-paths` deprecation notice. Running the builds rewrote tracked generated files (`backend/dist/*`, `backend/tsconfig.build.tsbuildinfo`, and a vitest cache file); those side effects were restored and are not part of this PR.
 

@@ -22,7 +22,9 @@ pipeline:
       no_remote_pr: true
       pr_draft: "<artifact_dir>/pr-description.md"
     standard:
-      branch: detect-default-and-require-human-approved-feature-branch
+      branch: reuse-current-non-default-branch-else-propose-one-feature-branch
+      create_additional_branches: false
+      existing_open_pr: update-by-push
       final_stage: human-approved-stage-commit-push-and-pr
       stage_all_changes_except_ignored: true
       exclude_gitignore_files: true
