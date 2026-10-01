@@ -1,11 +1,12 @@
 ---
 name: security-scan
-description: "Review authorization, CORS, share-token generation, payload limits, secret exposure, and npm audit findings. Use during implementation review and verification."
+description: "Review security-sensitive changes and use security tooling already configured for the target repository."
 user-invocable: false
 ---
+
 # Security Review
 
-1. Read the relevant controllers, services, DTOs, and `backend/src/main.ts`. Verify owner authorization, public read-only access, CORS policy, token generation, and server-side payload validation against actual code and documented requirements.
-2. Search source for likely hard-coded credentials. Inspect matches in context; distinguish identifiers/schema fields from actual secret values and never reproduce secrets in the report.
-3. Run `npm audit --audit-level=high` in both `backend/` and `frontend/` when dependencies are installed and network access is available. Record unavailable checks explicitly.
-4. Report findings by severity, file, evidence, user impact, and remediation. Do not assert a vulnerability based solely on a planned architecture property or an assumed constant.
+1. Identify applicable trust boundaries, identities, data sensitivity, authorization, input validation, external integrations, and threat assumptions from approved requirements and repository context.
+2. Inspect the relevant implementation and tests for concrete security defects. Search for likely hard-coded credentials and inspect matches in context; distinguish identifiers from secret values and never reproduce secrets.
+3. Find security scanners and dependency audit commands already configured by the repository. Run relevant checks when available and practical; do not assume npm, a particular cloud, or network access.
+4. Report findings by severity, file, evidence, user impact, and remediation. Record unavailable checks explicitly. Do not claim a vulnerability based only on a planned property or unsupported assumption.

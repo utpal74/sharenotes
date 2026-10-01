@@ -1,29 +1,38 @@
 pipeline:
-  name: ShareNotes Agentic SDLC
+  name: Repository-Agnostic Agentic SDLC
   orchestrator: SDLC Orchestrator
-  source:
+  intake:
     directory: docs/input
-    extension: .docx
-    reader: scripts/extract-word-requirements.ps1
-    required_count: 1
+    supported_files: [.docx, .md]
+    explicit_inputs: [jira_issue_key, file_path]
+    required_candidates: 1
     missing_or_ambiguous: stop-and-ask
+    docx_reader: scripts/extract-word-requirements.ps1
+    jira_access: use-available-integration-or-request-ticket-text
+  artifacts:
+    root: artifacts
+    layout: "<root>/<safe-source-id>/"
+    collision: stop-and-ask
+    preserve_source_inputs: true
   modes:
     local_only:
+      default: true
       no_commits: true
       no_push: true
       no_remote_pr: true
-      pr_draft: docs/pr-description.md
+      pr_draft: "<artifact_dir>/pr-description.md"
     standard:
-      base_branch: main
-      feature_branch_pattern: copilot/sdlc-<story-id>
-      requirements_commit: local-after-human-approval-on-feature-branch
-      final_stage: explicitly-approved-commit-push-and-gh-or-mcp-pr-create
-      stage_only_reviewed_in_scope_files: true
+      branch: detect-default-and-require-human-approved-feature-branch
+      final_stage: human-approved-stage-commit-push-and-pr
+      stage_all_changes_except_ignored: true
+      exclude_gitignore_files: true
+      ignored_includes_tracked_files: true
+      force_add: false
       push_cli: git
-      pr_creation: [gh_cli, github_mcp_create_pull_request]
+      pr_creation_order: [host-matching_mcp_integration, host_cli]
+      force_push: false
   instructions:
     - .github/copilot-instructions.md
-    - .github/instructions/pr-preparation.instructions.md
   skills:
     - .github/skills/api-contract/SKILL.md
     - .github/skills/build/SKILL.md
@@ -36,47 +45,103 @@ pipeline:
   stages:
     - step: 1
       agent: Requirements Analyst
-      output: docs/requirements.md
+      input: source_content
+      output: "<artifact_dir>/requirements.md"
       skills: [.github/skills/docs-sync/SKILL.md]
     - step: 2
       agent: Solution Architect
-      input: docs/requirements.md
-      output: docs/architecture.md
-      skills: [.github/skills/api-contract/SKILL.md, .github/skills/security-scan/SKILL.md]
+      input: ["<artifact_dir>/requirements.md", repository_context]
+      output: "<artifact_dir>/architecture.md"
+      skills:
+        [
+          .github/skills/api-contract/SKILL.md,
+          .github/skills/security-scan/SKILL.md,
+        ]
     - step: 3
       agent: Architecture Reviewer
-      input: [docs/requirements.md, docs/architecture.md]
-      output: docs/design-review.md
-      skills: [.github/skills/api-contract/SKILL.md, .github/skills/security-scan/SKILL.md, .github/skills/docs-sync/SKILL.md]
+      input:
+        ["<artifact_dir>/requirements.md", "<artifact_dir>/architecture.md"]
+      output: "<artifact_dir>/design-review.md"
+      skills:
+        [
+          .github/skills/api-contract/SKILL.md,
+          .github/skills/security-scan/SKILL.md,
+          .github/skills/docs-sync/SKILL.md,
+        ]
     - step: 4
       agent: Delivery Planner
-      input: [docs/requirements.md, docs/architecture.md, docs/design-review.md]
-      output: docs/impl-plan.md
+      input:
+        [
+          "<artifact_dir>/requirements.md",
+          "<artifact_dir>/architecture.md",
+          "<artifact_dir>/design-review.md",
+        ]
+      output: "<artifact_dir>/impl-plan.md"
       skills: [.github/skills/docs-sync/SKILL.md]
     - step: 5
       agent: Implementation Engineer
-      input: [docs/requirements.md, docs/architecture.md, docs/design-review.md, docs/impl-plan.md]
-      skills: [.github/skills/build/SKILL.md, .github/skills/lint/SKILL.md, .github/skills/test/SKILL.md]
+      input:
+        [
+          "<artifact_dir>/requirements.md",
+          "<artifact_dir>/architecture.md",
+          "<artifact_dir>/design-review.md",
+          "<artifact_dir>/impl-plan.md",
+        ]
+      skills:
+        [
+          .github/skills/build/SKILL.md,
+          .github/skills/lint/SKILL.md,
+          .github/skills/test/SKILL.md,
+        ]
     - step: 6
       agent: Code Reviewer
-      output: docs/review.md
-      skills: [.github/skills/api-contract/SKILL.md, .github/skills/security-scan/SKILL.md, .github/skills/docs-sync/SKILL.md]
+      input:
+        [
+          "<artifact_dir>/requirements.md",
+          "<artifact_dir>/architecture.md",
+          "<artifact_dir>/impl-plan.md",
+          repository_diff,
+        ]
+      output: "<artifact_dir>/review.md"
+      skills:
+        [
+          .github/skills/api-contract/SKILL.md,
+          .github/skills/security-scan/SKILL.md,
+          .github/skills/docs-sync/SKILL.md,
+        ]
     - step: 7
       agent: Quality Verifier
-      output: docs/verification.md
-      skills: [.github/skills/build/SKILL.md, .github/skills/lint/SKILL.md, .github/skills/test/SKILL.md, .github/skills/api-contract/SKILL.md, .github/skills/security-scan/SKILL.md, .github/skills/docs-sync/SKILL.md]
+      input:
+        [
+          "<artifact_dir>/requirements.md",
+          "<artifact_dir>/architecture.md",
+          "<artifact_dir>/impl-plan.md",
+          "<artifact_dir>/review.md",
+          repository_context,
+        ]
+      output: "<artifact_dir>/verification.md"
+      skills:
+        [
+          .github/skills/build/SKILL.md,
+          .github/skills/lint/SKILL.md,
+          .github/skills/test/SKILL.md,
+          .github/skills/api-contract/SKILL.md,
+          .github/skills/security-scan/SKILL.md,
+          .github/skills/docs-sync/SKILL.md,
+        ]
     - step: 8
       agent: Pull Request Author
-      output: [CHANGELOG.md, docs/pr-description.md, PR]
-      skills: [.github/skills/changelog/SKILL.md, .github/skills/pr-prep/SKILL.md]
+      output:
+        [
+          "<artifact_dir>/pr-description.md",
+          optional_project_changelog,
+          optional_remote_pr,
+        ]
+      skills:
+        [.github/skills/changelog/SKILL.md, .github/skills/pr-prep/SKILL.md]
   local_hooks:
-    path: .github/hooks
-    enable_command: git config core.hooksPath .github/hooks
-    pre_commit: [backend lint/build, frontend lint/build]
-    post_commit: print-commit-subject
     enabled_automatically: false
+    use_only_if_present_and_relevant: true
   github_actions:
-    workflows: [.github/workflows/agentic-sdlc.yml, .github/workflows/quality.yml]
-    trigger: [pull_request, push-to-main]
-    local_execution: false
-    local_equivalent: steps-5-through-7 validation skills
+    repository_specific: true
+    run_only_when_present_and_applicable: true

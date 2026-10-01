@@ -1,12 +1,13 @@
 ---
 name: pr-prep
-description: "Prepare a ShareNotes pull request from the current diff, review, and verification evidence, including the required description and checklist. Use in SDLC step 8."
+description: "Prepare a repository-appropriate delivery summary or pull request from verified changes and evidence."
 user-invocable: false
 ---
+
 # Pull Request Preparation
 
-1. Read `docs/requirements.md`, `docs/architecture.md`, `docs/impl-plan.md`, `docs/review.md`, `docs/verification.md`, `.github/pull_request_template.md`, and the current diff.
-2. Fill the required sections: a 2-3 sentence **Summary**; **Changes Made** listing each changed file and reason; **Test Evidence** with exact output or CI links; **Known Limitations** including Not Found and out-of-scope items; and an unchecked **Reviewer Checklist**.
-3. Include the template's security/data considerations and changelog entry. Clearly identify checks not run and why.
-4. Present the final title, body, changelog, and diff for human approval. Do not stage, commit, push, or create a PR without explicit confirmation.
-5. Always open a brand-new pull request; never search for, reuse, or update an existing open PR. After the local commit is approved, push from a freshly created, uniquely named branch (e.g. `<feature-branch>-pr-<UTC-timestamp>`) so `gh pr create` (or the GitHub MCP create-pull-request action) always succeeds in creating a new PR.
+1. Read the requirements, architecture, plan, review, and verification artifacts from the paths supplied by the orchestrator, any applicable repository PR template, and the current diff.
+2. Follow the target repository's established delivery format. Include summary, changed files/reasons, exact verification evidence, known limitations, and an unchecked reviewer checklist when appropriate. Clearly identify checks not run and why.
+3. Include security/data considerations when relevant. Update a changelog only if the repository maintains one or the user requests one. Write the draft to the artifact path supplied by the orchestrator.
+4. In standard mode, inspect all worktree changes and stage every change, including pre-existing changes, except paths matched by the repository's ignore rules and any `.gitignore` file itself. Ignore rules apply to already-tracked files too; never use `git add -f`. After staging, run `git diff --cached --name-only | git check-ignore --no-index --stdin` and unstage every reported path. List excluded paths in the proposal. Stage reviewed paths explicitly, never with a blanket `git add -A`. Check for secrets or unsafe-to-publish content and stop to ask if found. Present the exact staged diff, commit message, delivery summary, and remote action for human approval before committing. Local-only mode must not stage, commit, push, or create a remote resource.
+5. After approval, use Git CLI for branch, commit, and push operations. Detect the actual default branch and host instead of assuming `main` or GitHub. Push a human-approved feature branch without force-pushing. Prefer an available host-matching MCP PR-creation tool; otherwise use the authenticated CLI for that host. If neither route is available, report the blocker without claiming remote delivery. Never ask for credentials in chat.

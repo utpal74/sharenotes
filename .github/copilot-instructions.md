@@ -1,22 +1,24 @@
-# ShareNotes Repository Instructions
+# Repository-Agnostic SDLC Instructions
 
 ## Scope
 
-ShareNotes is a NestJS API and Vite React frontend. The current implementation is a prototype with in-memory note storage and demo-user headers. Do not describe prototype behavior as production-ready.
+These instructions govern the reusable Copilot SDLC workflow. Treat the checked-out repository as the target project and inspect its own instructions, manifests, source, tests, and CI before making project-specific recommendations or changes.
 
-## Engineering Rules
+## Workflow Rules
 
-- Preserve the API behavior documented in `docs/architecture.md` and `docs/impl-plan.md` unless the change updates those contracts.
-- Keep owner authorization, version conflict handling, soft deletion, share-link revocation, and public read-only access covered by tests.
-- Treat the backend as the authority for validation and authorization. Client validation is only for usability.
-- Do not add secrets, credentials, generated build output, or local environment files.
-- Prefer focused changes and existing NestJS, React, TypeScript, Vitest, and Vite patterns.
-- Use ASCII in source and documentation unless the existing file requires another encoding.
+- Accept only the configured input types and require an explicit, readable source. Never invent ticket content or infer requirements from a filename.
+- Keep workflow artifacts under the run-specific directory supplied by the orchestrator. Do not overwrite artifacts from another run or modify the original input.
+- Ask for clarification when requirements are ambiguous or material decisions remain. Human approval is required at the phase gates defined by the orchestrator.
+- Follow target-project conventions and instructions. Do not assume a language, framework, package manager, test command, API style, deployment target, or release process.
+- Keep implementation within the approved plan, add relevant tests, and report commands and results accurately. Do not weaken tests or hide failures.
+- Preserve existing behavior unless the approved requirements intentionally change it. Identify security, data-loss, authorization, and compatibility risks.
+- Never add secrets, credentials, local environment files, generated output, or unsafe content to a commit. Do not stage `.gitignore` files or any path matched by the repository's ignore rules, even if it is already tracked.
+- Do not commit, push, or create remote resources without explicit human approval.
+- Preserve the file's existing encoding and formatting; otherwise prefer ASCII for new source and documentation.
 
-## Validation
+## Artifact and Review Rules
 
-For backend changes run `npm run lint`, `npm run build`, `npm test`, and `npm run test:e2e` from `backend/`. For frontend changes run `npm run lint` and `npm run build` from `frontend/`. Report commands that cannot run and why.
-
-## Review Expectations
-
-Review correctness, authorization, security, error handling, test coverage, clarity, duplication, dependency risk, and documentation. Findings must identify the affected file and explain user impact. Separate prototype limitations from regressions introduced by a change.
+- Use the artifact paths passed by the orchestrator rather than assuming files live under `docs/`.
+- Clearly separate facts observed in the repository, proposed target behavior, assumptions, decisions, and unresolved questions.
+- Report unsupported tooling and checks not run; never present plans or drafts as completed implementation or verification.
+- Review the full relevant diff and directly related documentation before declaring a phase complete.

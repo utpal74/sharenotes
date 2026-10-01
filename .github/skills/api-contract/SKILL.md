@@ -1,12 +1,12 @@
 ---
 name: api-contract
-description: "Compare API routes, request/response contracts, error handling, authorization, and frontend calls against docs/architecture.md. Use during architecture, implementation review, or verification."
+description: "When a project exposes an API, compare its documented contracts with implementation, consumers, and tests."
 user-invocable: false
 ---
+
 # API Contract Check
 
-1. Read `docs/architecture.md` and extract each documented endpoint, method, request, response, status code, and security rule.
-2. Compare those contracts with `backend/src/notes/notes.controller.ts`, `backend/src/notes/notes.service.ts`, and the relevant frontend API calls.
-3. Verify owner-only mutation behavior, public read-only sharing, `404` behavior for deleted/revoked shares, and `409` version conflicts against both docs and code. Do not assume a behavior exists just because it is in the architecture.
-4. Check tests for the changed contracts. Distinguish missing implementation, missing coverage, and intentional prototype limitations.
-5. Return a drift table with endpoint, documented behavior, implemented behavior, test evidence, and status, followed by concrete remediation items.
+1. Determine whether the target project exposes HTTP, RPC, event, command-line, or other externally consumed contracts. If no API-like surface exists, state that this check is not applicable.
+2. Find contract sources in project documentation, schemas, route definitions, generated specifications, and tests. Identify methods/operations, inputs, outputs, errors, authorization, and compatibility rules that apply.
+3. Compare those contracts with implementation, consumers, and tests. Do not infer behavior from intended documentation alone.
+4. Return a concise drift table with operation, documented behavior, implemented behavior, test evidence, and status, followed by concrete remediation items. Distinguish missing implementation, missing coverage, and intentional limitations.

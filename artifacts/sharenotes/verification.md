@@ -29,4 +29,4 @@ The current checks validate the prototype's in-memory note and sharing behavior.
 
 ## Document Quality Check
 
-Before opening a PR, verify that claims in `README.md`, `architecture.md`, `design-review.md`, and `final-review-checklist.md` distinguish completed prototype behavior from pending production work.
+Before opening a PR, verify that claims in `../../README.md`, `architecture.md`, `design-review.md`, and `final-review-checklist.md` distinguish completed prototype behavior from pending production work.

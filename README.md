@@ -31,19 +31,22 @@ sharenotes/
 |-- frontend/                React + Vite application
 |   |-- src/
 |   `-- package.json
-|-- docs/                     Requirements, architecture, review, plan, and verification artifacts
-|   |-- input/                 Source Word user stories for the SDLC Orchestrator
-|   |-- requirements.md       Product requirements and acceptance criteria
-|   |-- architecture.md       High-level system architecture
-|   |-- design-review.md      Architecture review findings and decisions
-|   |-- impl-plan.md          Dependency-ordered implementation plan
-|   `-- verification.md      Verification evidence
-|-- .github/agents/           Eight SDLC phase agents and the orchestrator
-|-- scripts/                  Word-story extraction and launch helpers
-|-- start-sharenotes.ps1     Windows PowerShell launcher
-|-- start-sharenotes.sh      Bash launcher
+|-- docs/                     ShareNotes project documentation and SDLC inputs
+|   `-- input/                 Jira-derived, Word, or Markdown requirement sources
+|-- artifacts/                Run-specific outputs from the generic SDLC workflow
+|-- .github/                  Copilot agents, instructions, skills, MCP workflow, and GitHub Actions
+|-- .vscode/mcp.json          Workspace GitHub MCP server configuration
+|-- scripts/                  Word-story extraction and application launch helpers
+|   |-- start-sharenotes.ps1 Windows PowerShell launcher
+|   `-- start-sharenotes.sh  Bash launcher
 `-- README.md
 ```
+
+## Run the Agentic SDLC
+
+The repository includes reusable Copilot agents for an eight-phase, human-gated SDLC workflow. Explicitly start the `SDLC Orchestrator` in Copilot Chat and provide a Jira issue key, a `.docx`/`.md` path, or place exactly one supported input file in `docs/input/`. Jira retrieval requires an available Jira integration. Dropping a file in the folder does not automatically trigger the agent.
+
+Generated requirements, architecture, design review, plan, code review, verification, and delivery draft files go to `artifacts/<safe-source-id>/`; existing run outputs are not overwritten without approval. Local-only mode is the default. Review [docs/input/README.md](docs/input/README.md) for intake rules and [.github/README.md](.github/README.md) for workflow and approval details.
 
 ## Prerequisites
 
@@ -124,16 +127,16 @@ The frontend currently uses the development identity `demo-user` through the `x-
 
 All API routes use the `/api/v1` prefix.
 
-| Method | Endpoint | Purpose |
-| --- | --- | --- |
-| `POST` | `/notes` | Create a note |
-| `GET` | `/notes` | List active notes for the current development user |
-| `GET` | `/notes/:noteId` | Retrieve an owned note |
-| `PATCH` | `/notes/:noteId` | Update an owned note using its current `version` |
-| `DELETE` | `/notes/:noteId` | Soft-delete an owned note |
-| `POST` | `/notes/:noteId/share` | Create or reuse an active share link |
-| `DELETE` | `/notes/:noteId/share/:token` | Revoke a share link |
-| `GET` | `/shared/:token` | Read a shared note without authentication |
+| Method   | Endpoint                      | Purpose                                            |
+| -------- | ----------------------------- | -------------------------------------------------- |
+| `POST`   | `/notes`                      | Create a note                                      |
+| `GET`    | `/notes`                      | List active notes for the current development user |
+| `GET`    | `/notes/:noteId`              | Retrieve an owned note                             |
+| `PATCH`  | `/notes/:noteId`              | Update an owned note using its current `version`   |
+| `DELETE` | `/notes/:noteId`              | Soft-delete an owned note                          |
+| `POST`   | `/notes/:noteId/share`        | Create or reuse an active share link               |
+| `DELETE` | `/notes/:noteId/share/:token` | Revoke a share link                                |
+| `GET`    | `/shared/:token`              | Read a shared note without authentication          |
 
 Example create request:
 
@@ -196,7 +199,7 @@ Notes and share links are stored in JavaScript `Map` instances inside the runnin
 - Starting the application again does not restore previous notes.
 - The launcher scripts do not start PostgreSQL, MinIO, or Redis.
 
-The next persistence phase is planned to add PostgreSQL, migrations, object storage, Redis, and a database-backed notes service. See [impl-plan.md](docs/impl-plan.md) for the dependency-ordered implementation plan.
+The next persistence phase is planned to add PostgreSQL, migrations, object storage, Redis, and a database-backed notes service. See [impl-plan.md](artifacts/sharenotes/impl-plan.md) for the dependency-ordered implementation plan.
 
 ## Current Limitations
 
@@ -250,9 +253,11 @@ The next persistence phase is planned to add PostgreSQL, migrations, object stor
 
 ## Design Documents
 
-- [Requirements](docs/requirements.md)
-- [Architecture](docs/architecture.md)
-- [Design Review](docs/design-review.md)
-- [Final Review Checklist](docs/final-review-checklist.md)
-- [Implementation Plan](docs/impl-plan.md)
-- [Verification](docs/verification.md)
+- [Requirements](artifacts/sharenotes/requirements.md)
+- [Architecture](artifacts/sharenotes/architecture.md)
+- [Design Review](artifacts/sharenotes/design-review.md)
+- [Final Review Checklist](artifacts/sharenotes/final-review-checklist.md)
+- [Implementation Plan](artifacts/sharenotes/impl-plan.md)
+- [Code Review](artifacts/sharenotes/review.md)
+- [Verification](artifacts/sharenotes/verification.md)
+- [PR Draft](artifacts/sharenotes/pr-description.md)

@@ -1,12 +1,20 @@
-# Word Story Intake
+# SDLC Requirement Intake
 
-Place the `.docx` file itself in this folder, for example `docs/input/story.docx`; do not create another folder around it. Alternatively, supply its full path when starting the SDLC Orchestrator. The orchestrator extracts the document text with `scripts/extract-word-requirements.ps1` and stops if the source is missing, ambiguous, or unreadable.
+This folder is an optional intake location for the repository-aware SDLC Orchestrator. It accepts one `.docx` or `.md` requirement file per run. Place the file itself here; do not create a nested folder around it. Alternatively, provide a supported file path or a Jira issue key when you invoke the orchestrator.
 
-The source Word document is the input. `docs/requirements.md` is the reviewed requirements artifact produced from it; the orchestrator does not use an older Markdown artifact as a replacement for a missing Word source.
+## Supported sources
 
-## Run Locally
+- **Markdown (`.md`)**: read directly as UTF-8.
+- **Word (`.docx`)**: extract text with `scripts/extract-word-requirements.ps1` when the script is available; otherwise the orchestrator uses an available document reader or reports that it cannot read the file.
+- **Jira issue key**: retrieve the issue through an available Jira MCP/integration. If no Jira integration is available, provide the ticket text or save the requirement as a supported file. The agent must not invent or guess issue content.
 
-1. Open the repository folder in VS Code and start a Copilot Chat session with the `SDLC Orchestrator` agent.
-2. Ask it to run the pipeline for `docs/input/story.docx`. Add `local-only` to the request to avoid all commits, pushes, and remote PR creation; the PR author will save a draft to `docs/pr-description.md`.
-3. Answer clarification and approval questions as they arise. The agents write artifacts into the local working tree. Backend/frontend checks require Node.js and installed project dependencies.
-4. GitHub Actions run only after a push or pull request. Local Git hooks are optional and require the one-time setup documented in `.github/hooks/README.md`.
+When discovering files in this folder, exactly one `.docx` or `.md` source must be present. If there are zero or multiple candidates, the orchestrator asks which source to use and stops. Input files are preserved and are not modified.
+
+## Run the workflow
+
+1. Open the repository in VS Code and explicitly start the `SDLC Orchestrator` agent; dropping a file in this folder does not automatically trigger Copilot.
+2. Provide a Jira issue key, a `.docx`/`.md` path, or ask the agent to use the single file in `docs/input/`.
+3. The agent creates a safe source identifier and writes workflow artifacts under `artifacts/<source-id>/`.
+4. Answer clarification and approval questions at each phase gate. The default mode is local-only; ask for standard mode and separately approve any commit, push, or remote pull request.
+
+If an artifact directory for the same source already exists, the orchestrator must ask whether to resume it or use a unique suffix; it must not silently overwrite prior results.
