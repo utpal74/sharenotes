@@ -1,6 +1,6 @@
 # ShareNotes High-Level System Architecture
 
-**Source requirements:** [reuirement.md](reuirement.md)
+**Source requirements:** [requirements.md](requirements.md)
 
 **JIRA ID:** SN-101
 
