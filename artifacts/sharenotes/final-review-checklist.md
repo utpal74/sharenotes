@@ -6,7 +6,7 @@
 
 ## Performed Review
 
-- [x] Read and reviewed the requirements in [reuirement.md](reuirement.md).
+- [x] Read and reviewed the requirements in [requirements.md](requirements.md).
 - [x] Read and reviewed the proposed architecture in [architecture.md](architecture.md).
 - [x] Reviewed the component diagram and deployment diagram.
 - [x] Reviewed technology choices and module responsibilities.
