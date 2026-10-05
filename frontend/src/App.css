@@ -289,9 +289,13 @@ h1 {
     font-size: 11px;
 }
 
-.preview-copy span {
+.preview-copy input {
     overflow: hidden;
     max-width: min(520px, 60vw);
+    padding: 0;
+    border: 0;
+    outline: 0;
+    background: transparent;
     color: #78917d;
     font: 10px 'DM Mono', monospace;
     text-overflow: ellipsis;
@@ -393,6 +397,17 @@ textarea {
     gap: 15px;
     padding: 15px 20px 15px 28px;
     border-top: 1px solid #e8ede5;
+}
+
+.size-feedback {
+    padding: 0 28px 14px;
+    color: #829087;
+    font-size: 10px;
+    line-height: 1.5;
+}
+
+.size-feedback[role="alert"] {
+    color: #aa4938;
 }
 
 .save-state {
@@ -592,7 +607,7 @@ textarea {
         margin-top: -7px;
     }
 
-    .preview-copy span {
+    .preview-copy input {
         max-width: 68vw;
     }
 

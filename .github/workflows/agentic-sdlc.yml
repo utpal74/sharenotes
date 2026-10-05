@@ -140,6 +140,7 @@ jobs:
           check_script "backend npm run build"      "build"      "backend/package.json"
           check_script "backend npm test"           "test"       "backend/package.json"
           check_script "backend npm run test:e2e"   "test:e2e"   "backend/package.json"
+          check_script "frontend npm test"          "test"       "frontend/package.json"
           check_script "frontend npm run lint"      "lint"       "frontend/package.json"
           check_script "frontend npm run build"     "build"      "frontend/package.json"
 

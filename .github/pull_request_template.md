@@ -17,6 +17,7 @@ Required: include the exact CI check result and pass counts from the PR run. Do 
 | Backend build | |
 | Backend unit tests | `X passed, Y failed, Z total` |
 | Backend E2E tests | `X passed, Y failed, Z total` |
+| Frontend unit tests | `X passed, Y failed, Z total` |
 | Frontend lint | |
 | Frontend build | |
 

@@ -13,7 +13,7 @@ import {
     UpdateNoteInput,
 } from './notes.types.js';
 
-const MAX_NOTE_BYTES = 30 * 1024 * 1024;
+export const MAX_NOTE_BYTES = 31_457_280;
 const DEFAULT_OWNER_ID = 'demo-user';
 
 @Injectable()
@@ -153,7 +153,9 @@ export class NotesService {
 
     private ensureSize(sizeBytes: number): void {
         if (sizeBytes > MAX_NOTE_BYTES) {
-            throw new PayloadTooLargeException('A note, including attachments, cannot exceed 30 MB');
+            throw new PayloadTooLargeException(
+                'A note title and content cannot exceed 31,457,280 UTF-8 bytes',
+            );
         }
     }
 }

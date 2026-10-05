@@ -13,11 +13,12 @@ The project is being built from the requirements and architecture documents in t
 - Return `409 Conflict` when an older note version is submitted.
 - Soft-delete notes.
 - Generate an opaque public share token.
-- Copy a share link to the clipboard.
-- Show an animated copied-link preview in the frontend.
+- Reuse an active share link, copy its URL, and keep the URL available if clipboard copying fails.
+- Confirm and revoke a share link from the owner UI; a later share creates a fresh URL.
 - View a shared note without editing controls.
 - Invalidate a shared link when its note is deleted.
-- Enforce a 30 MB limit for the current note title and content payload.
+- Enforce an inclusive 31,457,280-byte UTF-8 limit on `JSON.stringify({ title, content })` after title trimming/defaulting; larger notes receive HTTP 413 and the backend is authoritative.
+- Limit raw JSON request bodies to 32 MiB independently; larger request bodies receive HTTP 413 before note validation.
 - Responsive frontend layout for desktop and mobile widths.
 
 ## Project Structure
@@ -173,20 +174,22 @@ Backend:
 
 ```powershell
 Push-Location backend
+npm run lint
 npm run build
 npm test
-npm run lint
+npm run test:e2e
 ```
 
 Frontend:
 
 ```powershell
 Push-Location frontend
+npm test
 npm run build
 npm run lint
 ```
 
-The frontend lint currently reports a non-blocking React warning related to state updates inside an effect. It does not fail the lint command.
+The frontend tests use Vitest with jsdom and React Testing Library.
 
 ## Persistence Status
 
@@ -208,13 +211,15 @@ The next persistence phase is planned to add PostgreSQL, migrations, object stor
 - There is no real registration, login, identity provider, session, refresh-token, or CSRF implementation.
 - The development identity is supplied through `x-user-id: demo-user`.
 - A caller who can choose that header can impersonate the demo user.
+- Owner-facing share revocation prevents future reads of that URL but cannot recall copied URLs or content already viewed.
 - Production authentication and authorization must be implemented before deployment.
 
 ### Storage and Attachments
 
 - Notes are stored in memory rather than PostgreSQL.
 - Attachments are not implemented yet.
-- The 30 MB check currently covers the serialized title and text content only.
+- The inclusive 31,457,280-byte note limit covers UTF-8 bytes of normalized `JSON.stringify({ title, content })`; blank create titles become `Untitled note`, blank update titles retain the current title, and attachments are not counted.
+- The separate 32 MiB limit applies to raw JSON HTTP request bodies; requests above it receive HTTP 413.
 - MinIO or cloud object storage is not configured.
 - Signed upload and download URLs are not implemented.
 - Attachment cleanup jobs, retries, and retention jobs are not implemented.
@@ -223,7 +228,7 @@ The next persistence phase is planned to add PostgreSQL, migrations, object stor
 
 - The editor is currently a text area, not a Tiptap or Lexical rich-text editor.
 - Backend and frontend rich-text sanitization is not implemented.
-- There is no configured content security policy, rate limiting, audit log, or security scanning pipeline.
+- There is no configured content security policy, rate limiting, or audit log. The configured npm audit job is non-blocking and is not a security gate.
 - The public share token is generated securely for the prototype, but token hashes are not persisted because there is no database yet.
 
 ### Operations

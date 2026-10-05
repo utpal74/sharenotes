@@ -95,19 +95,32 @@ jobs:
           cache-dependency-path: frontend/package-lock.json
       - run: npm ci --legacy-peer-deps
 
+      - name: Frontend tests
+        id: frontend-test
+        run: npm test
+
       - name: Frontend lint
+        id: frontend-lint
         run: npm run lint
 
       - name: Frontend build
+        id: frontend-build
         run: npm run build
 
       - name: Frontend quality summary
         if: always()
         shell: bash
+        env:
+          TEST_OUTCOME: ${{ steps.frontend-test.outcome }}
+          LINT_OUTCOME: ${{ steps.frontend-lint.outcome }}
+          BUILD_OUTCOME: ${{ steps.frontend-build.outcome }}
         run: |
-          {
-            echo "## Frontend quality gate evidence"
-            echo ""
-            echo "- Frontend lint: passed"
-            echo "- Frontend build: passed"
-          } >> "$GITHUB_STEP_SUMMARY"
+          node - <<'NODE'
+          const fs = require('fs');
+          let summary = '## Frontend quality gate evidence\n\n';
+          summary += `- Frontend tests: ${process.env.TEST_OUTCOME}\n`;
+          summary += `- Frontend lint: ${process.env.LINT_OUTCOME}\n`;
+          summary += `- Frontend build: ${process.env.BUILD_OUTCOME}\n`;
+
+          fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, summary + '\n');
+          NODE
